@@ -1,13 +1,12 @@
 package phamquocduy.Lab3.controller;
 
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.cache.CacheType;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.ModelAttribute;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.validation.BindingResult;
+import org.springframework.web.bind.annotation.*;
 import phamquocduy.Lab3.entity.Book;
 import phamquocduy.Lab3.entity.Category;
 import phamquocduy.Lab3.services.BookService;
@@ -39,8 +38,25 @@ public class BookController {
     }
 
     @PostMapping("/add")
-    public String addBook(@ModelAttribute("book") Book book) {
+    public String addBook(@Valid @ModelAttribute("book") Book book, BindingResult bindingResult, Model model) {
+        if (bindingResult.hasErrors()) {
+            model.addAttribute("categories", categoryService.getAllCategories());
+            return "book/add";
+        }
+
         bookService.addBook(book);
+        return "redirect:/books";
+    }
+
+    @GetMapping({"/delete/{id}"})
+    public String DeleteBook(@PathVariable("id") Long id) {
+        Book book = bookService.getBookById(id);
+        if (book != null) {
+            bookService.deleteBook(id);
+            System.out.println("Book đã được xóa");
+        } else {
+            System.out.println("Book chưa được xóa");
+        }
         return "redirect:/books";
     }
 }
